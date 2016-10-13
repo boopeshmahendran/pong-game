@@ -91,7 +91,7 @@ var mainGame = {
 	render: function() {
 	},
 	ballHitPlayer: function(player, ball) {
-		this.ballSpeed += 5;
+		this.ballSpeed += 15;
 		if (ball.body.velocity.x < 0)
 			 ball.body.velocity.x = -this.ballSpeed - 2 * Math.abs(ball.y - player.y);
 		else
