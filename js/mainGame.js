@@ -112,7 +112,7 @@ var mainGame = {
 	resetBall: function() {
 		this.ball.x = game.world.width * 0.5;
 		this.ball.y = game.world.height * 0.5;
-		this.ballSpeed = 230;
+		this.ballSpeed = 120;
 	},
 	startBall: function() {
 		this.ball.body.velocity.set(this.ballSpeed);
