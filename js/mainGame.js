@@ -4,39 +4,36 @@ var mainGame = {
 		game.load.image('ball', 'images/ball.png');
 	},
 	create: function() {
-		// physics engine
-		this.game.physics.startSystem(Phaser.Physics.ARCADE);
-		this.game.physics.arcade.checkCollision.left = false;
-		this.game.physics.arcade.checkCollision.right = false;
-
 		// player 1
-		this.player1 = game.add.sprite(50, this.game.world.height * 0.5, 'player');
+		this.player1 = game.add.sprite(50, this.game.world.centerY, 'player');
 		this.player1.scale.set(0.5);
 		this.player1.anchor.set(0.5);
-		this.game.physics.enable(this.player1, Phaser.Physics.ARCADE);
-		this.player1.body.collideWorldBounds = true;
-		this.player1.body.immovable = true;
 		this.player1.score = 0;
 
 		// player 2
-		this.player2 = game.add.sprite(this.game.world.width - 60, this.game.world.height * 0.5, 'player');
+		this.player2 = game.add.sprite(this.game.world.width - 60, this.game.world.centerY, 'player');
 		this.player2.scale.set(0.5);
 		this.player2.anchor.set(0.5);
-		this.game.physics.enable(this.player2, Phaser.Physics.ARCADE);
-		this.player2.body.collideWorldBounds = true;
-		this.player2.body.immovable = true;
 		this.player2.score = 0;
 
 		// ball
-		this.ball = game.add.sprite(this.game.world.width * 0.5, this.game.world.height * 0.5, 'ball');
+		this.ball = game.add.sprite(this.game.world.centerX, this.game.world.centerY, 'ball');
 		this.ball.anchor.set(0.5);
-		this.game.physics.enable(this.ball, Phaser.Physics.ARCADE);
+
+		this.enablePhysics();
+		this.game.physics.arcade.checkCollision.left = false;
+		this.game.physics.arcade.checkCollision.right = false;
+
+		// set ball position and start ball
 		this.resetBall();
 		this.startBall();
 
+		// ball collision detection
 		this.ball.body.collideWorldBounds = true;
 		this.ball.checkWorldBounds = true;
 		this.ball.events.onOutOfBounds.add(this.ballOut, this);
+
+
 		this.ball.body.bounce.set(1);
 
 		// score text
@@ -49,6 +46,22 @@ var mainGame = {
 		this.gameOverText = this.game.add.text(this.game.world.width * 0.5, this.game.world.height * 0.5, '', fontStyle);
 		this.gameOverText.anchor.set(0.5);
 	}, 
+	enablePhysics: function() {
+		this.game.physics.startSystem(Phaser.Physics.ARCADE);
+
+		// player 1
+		this.game.physics.enable(this.player1, Phaser.Physics.ARCADE);
+		this.player1.body.collideWorldBounds = true;
+		this.player1.body.immovable = true;
+
+		// player 2
+		this.game.physics.enable(this.player2, Phaser.Physics.ARCADE);
+		this.player2.body.collideWorldBounds = true;
+		this.player2.body.immovable = true;
+
+		// ball
+		this.game.physics.enable(this.ball, Phaser.Physics.ARCADE);
+	},
 	update: function() {
 		this.game.physics.arcade.collide(this.player1, this.ball, this.ballHitPlayer, null, this);
 		this.game.physics.arcade.collide(this.player2, this.ball, this.ballHitPlayer, null, this);
@@ -96,38 +109,39 @@ var mainGame = {
 
 		this.resetBall();
 		this.startBall();
-		if (this.checkGameOver()) this.gameOver();
+
+		var winner = this.checkGameOver();
+		if (winner) {
+			 this.gameOver(winner);
+		}
 	},
 	checkGameOver: function() {
 		if (this.player1.score === 5) {
-			this.gameOverText.setText("Game Over!\n Player 1 Wins.\n Click To Retry");
-			return true;
+			return 1;
 		}
 		else if (this.player2.score === 5) {
-			this.gameOverText.setText("Game Over!\n Player 2 Wins.\n Click To Retry");
-			return true;
+			return 2;
 		}
 		return false;
 	},
 	resetBall: function() {
-		this.ball.x = game.world.width * 0.5;
-		this.ball.y = game.world.height * 0.5;
+		this.ball.reset(this.game.world.centerX, this.game.world.centerY);
 		this.ballSpeed = 120;
 	},
 	startBall: function() {
 		this.ball.body.velocity.set(this.ballSpeed);
 	},
-	gameOver: function() {
-		this.ball.body.velocity.set(0);
+	gameOver: function(winner) {
+		this.gameOverText.setText("Game Over!\n Player " + winner + " Wins.\n Click To Retry");
+		this.resetBall();
 
 		// reset player 1
-		this.player1.x = 50;
-		this.player1.y = this.game.world.height * 0.5;
+		this.player1.reset(50, this.game.world.centerY);
 
 		// reset player 2 
-		this.player2.x = this.game.world.width - 60;
-		this.player2.y = this.game.world.height * 0.5;
+		this.player2.reset(this.game.world.width - 60, this.game.world.centerY);
 
+		// event handler for restarting game
 		this.game.input.onDown.addOnce(this.restart, this);
 	},
 	restart: function() {
@@ -137,6 +151,6 @@ var mainGame = {
 		this.score1.setText(0);
 		this.score2.setText(0);
 		this.resetBall();
-		this.ball.body.velocity.set(this.ballSpeed);
+		this.startBall();
 	}
 };
